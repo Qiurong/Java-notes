@@ -1,7 +1,8 @@
 # Java集合框架总览
 Java集合框架分为两大接口，**Collection**接口和**Map**接口。
-**Collection**接口：存放单一元素
-**Map**接口：存放键值对(key-value)
+
+- **Collection**接口：存放单一元素
+- **Map**接口：存放键值对(key-value)
 
 # Collection总览
 先上图，本图根据JDK1.8绘制。
