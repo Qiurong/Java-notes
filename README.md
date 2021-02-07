@@ -1,2 +1,2 @@
 # Java-notes
-notes of Java language
+一些Java知识点的笔记
