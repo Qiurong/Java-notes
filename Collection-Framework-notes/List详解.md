@@ -161,6 +161,7 @@ ArrayList底层数据结构为**object数组**。
 ## LinkedList
 
 LinkedList底层数据结构是一个**双向链表**。
+
 **1. 基本变量**
 
 ```java
@@ -211,19 +212,19 @@ LinkedList底层数据结构是一个**双向链表**。
   	}
 	
   	/**
-     		* Links e as last element.
-     	*/
-    	void linkLast(E e) {
-        	final Node<E> l = last;
-        	final Node<E> newNode = new Node<>(l, e, null);
-        	last = newNode;
-        	if (l == null)
-            	first = newNode;
-        	else
-            	l.next = newNode;
-        	size++;
-        	modCount++;
-	  	}
+      * Links e as last element.
+      */
+    void linkLast(E e) {
+        final Node<E> l = last;
+        final Node<E> newNode = new Node<>(l, e, null);
+        last = newNode;
+        if (l == null)
+            first = newNode;
+        else
+            l.next = newNode;
+        size++;
+        modCount++;
+	  }
 	```
 	
 - `add(int index, E e)`：将元素e增加到指定位置。**O(n)**
@@ -371,5 +372,5 @@ LinkedList底层数据结构是一个**双向链表**。
 - ArrayList由于下标的存在，是可以随机访问的，只要给定一个index可以直接取到对应的元素，因此其get()和set()方法为O(1)，而对应的LinkedList这两个操作则为O(n)。
 - 在**增**操作中(删操作同理)
 	- `add(E e)`是在尾部加元素，ArrayList虽然会出现扩容的情况，但均摊复杂度还是O(1)；而LinkedList由于双链表last指针的存在，也是O(1)。
-	- `add(int index, E e)`是在指定位置加元素。这个操作涉及两部分，**首先**是找到这个位置的元素，ArrayList为O(1)，LinkedList为O(|N/2 - index|)(参考`node(int index)`函数)；**其后**ArrayList需要移动O(N-index)个位置，LinkedList则完成指针的对应操作即可O(1)。因此，该操作LinkedList较好。
+	- `add(int index, E e)`是在指定位置加元素。这个操作涉及两部分，**首先**是找到这个位置的元素，ArrayList为O(1)，LinkedList为**O(|N/2 - index|)**(参考`node(int index)`函数)；**其后**ArrayList需要移动O(N-index)个位置，LinkedList则完成指针的对应操作即可O(1)。因此，该操作LinkedList较好。
 - 大部分情况下**改查多用ArrayList**，**增删多用LinkedList**。
