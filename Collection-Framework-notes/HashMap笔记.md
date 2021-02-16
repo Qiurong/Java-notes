@@ -237,18 +237,21 @@ final float loadFactor;
 	
 	其中`n |= n >>>1`完成的上述步骤1，这里我们用图示来进行形象解释。需要注意的是，实际函数中n的最大值为`MAXIMUM_CAPACITY`即(2^30)，这里只是为了解释针对32位的int，最后一步为`n |= n >>>16`能保证最高位1之后的每一位都置一。
 	<img src="./img/tableSizeFor方法详解.png"/>
+	
 	其中`int n = cap - 1;` 的作用为在进行置一操作前先减一，否则当n正好为二次幂时，最后返回的结果为**2n**（实际期望返回结果为n）。所以可以先减一（此时高位1为原高位1的后一位），再进行**高位1之后位 置一**再**加一**的操作，最后得到n。
 
 ### put操作
 - `hash(Obj key)`方法。
-该方法用于计算`key`的`hash`值，
-	```java
-	static final int hash(Object key) {
+  
+	该方法用于计算`key`的`hash`值，
+	
+    ```java
+    static final int hash(Object key) {
         int h;
         //通过调用Object.hashCode()并与右移再异或得到key的hash值
-        return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
-    }
-	```
+	    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+	}
+	  ```
 	其中 hash = (h = key.hashCode()) ^ ( h >>> 16)。调用`Object.hashCode()`得到key的hashcode，之后右移16位(此时h的高位覆盖了原低位)，然后再进行异或操作。其本质是**保留高位**( a ^ 0 = a)，**新低位 = 高位 异或 低位**，这样做参杂的元素变多，生成的hash值的随机性增大。
 	  原 来 的  hashcode值: 1111 1111 1111 1111 0100 1100 0000 1010
 	  移 位 后 的hashcode: 0000 0000 0000 0000 1111 1111 1111 1111
@@ -264,7 +267,7 @@ final float loadFactor;
 
 ```java
 final Node<K,V>[] resize() {
-	//记录扩容前的数组
+    //记录扩容前的数组
     Node<K,V>[] oldTab = table;
     //记录扩容前数组的容量
     int oldCap = (oldTab == null) ? 0 : oldTab.length;
@@ -399,10 +402,13 @@ final Node<K,V>[] resize() {
 
    <img src="./img/resize方法图解.png"/>
    <img src="./img/resize方法图解2.png"/>
+
    根据图片可以看出来，扩容后元素e的位置只能为`原位置i`或`原位置i+oldCap`，而决定是哪一种则是由**元素本身hash值的高位为1还是为0**，判断其高位为0还是1非常简单，**将其与仅该高位为1的元素进行与操作即可**，即与oldCap进行与操作。对于高位为0的元素其 hash & **oldCap** = 0，否则不为0，也就解释了上述的 `e.hash & oldCap` 公式。
+
    其实要理解这两个公式也非常简单，只要抓住主线hashmap中定义某个元素位置`i = Node.hash & n-1`即可，这些操作都是为了跟这个最初始的公式保持一致性而定义的。
 
  3. 链表元素rehash的平衡操作
+    
       接下来来讲解一下具体如何进行链表上的元素放到low链表和high链表中。该操作的代码可以精简为：
 
 ```java
@@ -546,42 +552,46 @@ final Node<K,V> getNode(int hash, Object key) {
 
 ## 常见面试题
 1. hashmap如何保证`key`不重复？
-    在进行**put**操作时，同样key的元素会被hash到数组的同一下标，若数组该下标位置已经存在元素且key值相同，则覆盖旧的value值，这样也就保证了在hashmap中一个key永远只对应一个value。
+   
 
+在进行**put**操作时，同样key的元素会被hash到数组的同一下标，若数组该下标位置已经存在元素且key值相同，则覆盖旧的value值，这样也就保证了在hashmap中一个key永远只对应一个value。
+    
 2. hashmap的`get()`方法工作原理。
-首先会调用`hash()`函数计算出key的hash值，然后找到对应的数组下标，在该下标位置的桶中寻找与key值相同的元素的value值，并返回value值。
-	
-	> hashmap中的`hash()`函数区别于原生的`hashcode()`函数，其为hashcode()计算出来的hash值保留高16位，低位 = 原高位 ^ 低位。
-	
+
+  首先会调用`hash()`函数计算出key的hash值，然后找到对应的数组下标，在该下标位置的桶中寻找与key值相同的元素的value值，并返回value值。
+
+  > hashmap中的`hash()`函数区别于原生的`hashcode()`函数，其为hashcode()计算出来的hash值保留高16位，低位 = 原高位 ^ 低位。
+
 3. hashmap的`put()`方法工作原理。
+
     首先检查数组是否为空，为空则调用resize()方法进行初始化。之后计算元素`key`的**hash值**，根据计算出的hash值映射到数组的某一下标，将元素存在该下标的空间中。若当前下标存在元素，key值相同的情况下覆盖value值，否则插入到链表末端去，若链表长度超过8，则需要转换为红黑树。
 
 4. hashmap中`hashcode()`与`equals()`的作用、区别与联系。
-	> 根据JDK官方文档规定：If two objects are equal according to the `equals`(Object) method, then calling the `hashCode()` method on each of the two objects must produce the same integer result.
+  > 根据JDK官方文档规定：If two objects are equal according to the `equals`(Object) method, then calling the `hashCode()` method on each of the two objects must produce the same integer result.
 
-	根据文档规定意思也就是：如果两个object调用`equals()`方法得到两个对象相等，那么调用两个对象的`hashcode()`方法就会得到相同的返回值；反之如果两个对象的hashCode()方法得到了不同的返回值，那么两个对象调用equals()方法应该得到不相等的结果。相应的也就得到：重写`hashcode()`方法，必须也要重写`equals()`方法。
-	那么我们回到hashmap源码中，Node类重写了`hashcode()`和`equals()`方法。
-	```java
-	//重写了hashcode()方法，定义Node类的hashCode()为key.hashCode()*Value.hashCode()
-	public final int hashCode() {
-            return Objects.hashCode(key) ^ Objects.hashCode(value);
-        }
-    //相应地重写了equals方法    
-    public final boolean equals(Object o) {
-            //两个Node指向同一块内存地址
-            if (o == this)
-                return true;
-            //两个Node的key和Value都相等
-            if (o instanceof Map.Entry) {
-                Map.Entry<?,?> e = (Map.Entry<?,?>)o;
-                if (Objects.equals(key, e.getKey()) &&
-                    Objects.equals(value, e.getValue()))
-                    return true;
-            }
-            return false;
-        }
-	```
-	
+  根据文档规定意思也就是：如果两个object调用`equals()`方法得到两个对象相等，那么调用两个对象的`hashcode()`方法就会得到相同的返回值；反之如果两个对象的hashCode()方法得到了不同的返回值，那么两个对象调用equals()方法应该得到不相等的结果。相应的也就得到：重写`hashcode()`方法，必须也要重写`equals()`方法。
+  那么我们回到hashmap源码中，Node类重写了`hashcode()`和`equals()`方法。
+  ```java
+  //重写了hashcode()方法，定义Node类的hashCode()为key.hashCode()*Value.hashCode()
+  public final int hashCode() {
+           return Objects.hashCode(key) ^ Objects.hashCode(value);
+       }
+   //相应地重写了equals方法    
+   public final boolean equals(Object o) {
+           //两个Node指向同一块内存地址
+           if (o == this)
+               return true;
+           //两个Node的key和Value都相等
+           if (o instanceof Map.Entry) {
+               Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+               if (Objects.equals(key, e.getKey()) &&
+                   Objects.equals(value, e.getValue()))
+                   return true;
+           }
+           return false;
+       }
+  ```
+
 5. equals() 与 == 的异同
 
    在将这两个关系操作符之前，我们先讲一下Java中的变量类型，Java中所有的变量分为 **基本类型** 和 **引用类型**。
@@ -654,12 +664,16 @@ final Node<K,V> getNode(int hash, Object key) {
    ```
 
 6. hashmap的数组长度为什么一定为2的次幂，如何保证这一特性？
+   
    在hashmap的**put**操作中，下标为`i = (n - 1) & hash`。
-
- - 当n为二次幂时，n-1则为高位为0，剩余位为1，再加上 **a & 1 = a**，最后i的实际取值为为**hash值的低位**，这种情况下最后i的实际取值为**0到n-1**，这样就保证了均匀hash到数组上(均匀由hash值的计算来实现，**&(n-1)只是保证了散列到数组上的每个下标上去**)
- - 当n不为二次幂时，n-1的低位肯定存在0，再加上 **a & 0 = 0**，最后的计算结果肯定会导致数组中的某些下标利用不到。
-
-   <img src="./img/数组为什么要为二次幂长度.png"/>
+   
+   - 当n为二次幂时，n-1则为高位为0，剩余位为1，再加上 **a & 1 = a**，最后i的实际取值为为**hash值的低位**，这种情况下最后i的实际取值为**0到n-1**，这样就保证了均匀hash到数组上(均匀由hash值的计算来实现，**&(n-1)只是保证了散列到数组上的每个下标上去**)
+   
+   - 当n不为二次幂时，n-1的低位肯定存在0，再加上 **a & 0 = 0**，最后的计算结果肯定会导致数组中的某些下标利用不到。
+   
+     <img src="./img/数组为什么要为二次幂长度.png"/>
+   
+   
 
    从上图中可以看出，当n为二次幂(n=128)时，最终i的取值为**0到n-1**；当n不为二次幂(n=127)时，最终i的取值的最后一位始终为0，会导致**0到n-1**中有些值取不到，从而浪费了对应的数组下标的内存空间。
 
@@ -667,10 +681,11 @@ final Node<K,V> getNode(int hash, Object key) {
    在上图左边红框中可以看出，最后**hash到的位置**基本上取决于**hash值的低位**(n在大部分情况下取值很小)，如果直接使用hashcode作为hash值，那么会导致冲突的可能性增大，而**保留高位，低位^高位=低位**的做法会大大降低冲突的可能性。
 
    **如何保证数组长度为2的次幂?**
-     首先在hashmap的初始化过程中，数组的容量要么为**初始指定的16**要么为**向上取整的二次幂**（通过`tableSizeFor`实现），其次扩容的策略为**每次扩容为原来的两倍**，这样就保证了数组的长度始终为二次幂。
-
+   
+首先在hashmap的初始化过程中，数组的容量要么为**初始指定的16**要么为**向上取整的二次幂**（通过`tableSizeFor`实现），其次扩容的策略为**每次扩容为原来的两倍**，这样就保证了数组的长度始终为二次幂。
+   
 7. jdk1.8以后，hashmap为什么要引入红黑树，这样做带来什么好处？
-    
+   
     在1.8之前，hashmap的实现方式是**数组+链表**，当数组同一下标位置上有多个元素时，使用链表存储这些hash值相同的元素，链表插入采用**头插法**。
 - 采用头插法可以保证插入为O(1)，可以保证后写入的值在每个链表的前端，默认后写的值被查找的可能性大一些，所以为了提高查找效率采用头插法。
     - 在链表中查找一个元素时，需要遍历链表，查找复杂度为O(n)，效率不高。
