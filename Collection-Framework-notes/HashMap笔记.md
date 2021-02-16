@@ -19,7 +19,7 @@ hash(散列函数)：将任意长度的输入通过散列算法变成(映射到)
 顾名思义，哈希表就是基于哈希算法构造的容器，它通过把key值 hash到表中的某个位置来存储该元素。由于需要在指定存储位置上进行元素的存储，所以哈希表一般采用数组作为其实现方式（基于数组根据下标能够立刻获得对应元素的特性）。
 在哈希表中，当我们要进行增删改查的操作时，只需要将当前元素的key值  通过哈希函数映射到数值中的某个存储位置，通过数组下标一次定位即可完成相应操作。
 可以简单认为 **存储位置(下标) = f(关键字)**。
-<img src="./img/HashMap演示图.png" style="zoom:50%;"/>
+<img src="./img/HashMap演示图.png" style="zoom:40%;"/>
 
 ## HashMap
 
@@ -37,120 +37,121 @@ HashMap：以键值对存储元素的数据结构。其主干是一个**Node数�
 - hashmap域值
 
 ```java
-	/**
- 	* 默认数组的初始化容量16，必须为2的次幂。
- 	* The default initial capacity - MUST be a power of two.
- 	*/
-	static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
+/**
+ * 默认数组的初始化容量16，必须为2的次幂。
+ * The default initial capacity - MUST be a power of two.
+ */
+static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
 
-	/** 
- 	* 数组的最大容量，用于构造函数显式申明数组初始化容量时，最大为2^30.
- 	* The maximum capacity, used if a higher value is implicitly specified by either of the constructors with arguments.
- 	* MUST be a power of two <= 1<<30.
- 	*/
-	static final int MAXIMUM_CAPACITY = 1 << 30;
+/** 
+ * 数组的最大容量，用于构造函数显式申明数组初始化容量时，最大为2^30.
+ * The maximum capacity, used if a higher value is implicitly specified by either of the constructors with arguments.
+ * MUST be a power of two <= 1<<30.
+ */
+static final int MAXIMUM_CAPACITY = 1 << 30;
 
-	/** 
- 	* 默认的装载因子，loadFactor = size/capacity, size为node的数量，loadFactor可以 ＞ 1.
- 	* The load factor used when none specified in constructor.
- 	*/
-	static final float DEFAULT_LOAD_FACTOR = 0.75f;
+/** 
+ * 默认的装载因子，loadFactor = size/capacity, size为node的数量，loadFactor可以 ＞ 1.
+ * The load factor used when none specified in constructor.
+ */
+static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
-	/**
- 	* 桶的树化阈值，即一个链表的长度大于8时，把这个链表转为红黑树。
- 	* The bin count threshold for using a tree rather than list for a bin. 
- 	*/
-	static final int TREEIFY_THRESHOLD = 8;
+/**
+ * 桶的树化阈值，即一个链表的长度大于8时，把这个链表转为红黑树。
+ * The bin count threshold for using a tree rather than list for a bin. 
+ */
+static final int TREEIFY_THRESHOLD = 8;
 
-	/** 
- 	* 桶的反树化阈值，即当一个红黑树中结点少于6个时，红黑树转回链表。
- 	* The bin count threshold for untreeifying a (split) bin during a resize operation.
- 	*/
-	static final int UNTREEIFY_THRESHOLD = 6;
+/** 
+ * 桶的反树化阈值，即当一个红黑树中结点少于6个时，红黑树转回链表。
+ * The bin count threshold for untreeifying a (split) bin during a resize operation.
+ */
+static final int UNTREEIFY_THRESHOLD = 6;
 
-	/**
- 	* hashMap的主干结构：Node数组
- 	* The table, initialized on first use, and resized as necessary. When allocated, length is always a power of two.
- 	*/
-	transient Node<K,V>[] table;
+/**
+ * hashMap的主干结构：Node数组
+ * The table, initialized on first use, and resized as necessary. When allocated, length is always a power of two.
+ */
+transient Node<K,V>[] table;
 
-	/**
- 	* 存储所有Node(Entry)结点的引用的Set集合，可以理解为缓存。
- 	* Holds cached entrySet(). 
- 	*/
-	transient Set<Map.Entry<K,V>> entrySet;
+/**
+ * 存储所有Node(Entry)结点的引用的Set集合，可以理解为缓存。
+ * Holds cached entrySet(). 
+ */
+transient Set<Map.Entry<K,V>> entrySet;
 
-	/**
- 	* 容器中键值对的数量，区分于数组的capacity.
- 	* The number of key-value mappings contained in this map.
- 	*/
-	transient int size;
+/**
+ * 容器中键值对的数量，区分于数组的capacity.
+ * The number of key-value mappings contained in this map.
+ */
+transient int size;
 
-	/**
- 	* 容器被结构性改变的次数
- 	* The number of times this HashMap has been structurally modified
- 	* This field is used to make iterators on Collection-views of the HashMap fail-fast.  (See ConcurrentModificationException).
- 	*/
-	transient int modCount;
+/**
+ * 容器被结构性改变的次数
+ * The number of times this HashMap has been structurally modified
+ * This field is used to make iterators on Collection-views of the HashMap fail-fast.  (See ConcurrentModificationException).
+ */
+transient int modCount;
 
-	/**
- 	* 下一次数组扩容的门槛，threshold = capacity * loadFactor.
- 	* 当 size > thresshold 即 容器中键值对数量超过阈值时，需要扩容。
- 	* The next size value at which to resize (capacity * load factor).
- 	*/
- 	int threshold;
+/**
+ * 下一次数组扩容的门槛，threshold = capacity * loadFactor.
+ * 当 size > thresshold 即 容器中键值对数量超过阈值时，需要扩容。
+ * The next size value at which to resize (capacity * load factor).
+ */
+ int threshold;
  
-	/**
- 	* 装载因子
- 	* The load factor for the hash table.
- 	*/
-	final float loadFactor;
+/**
+ * 装载因子
+ * The load factor for the hash table.
+ */
+final float loadFactor;
 ```
 
  - `Node(Entry)`对象 
+	
 	```java
-		/**
-		* 键值对的存储实现形式，其中包含key, value以及指向下一结点的next指针。
-     	* Basic hash bin node, used for most entries. 
-     	*/
-    	static class Node<K,V> implements Map.Entry<K,V> {
-        	final int hash;		// hash = hash(key),hash()方法将在之后讲解到
-        	final K key;		
-        	V value;			
-        	Node<K,V> next;		//next指针
+	/**
+   * 键值对的存储实现形式，其中包含key, value以及指向下一结点的next指针。
+   * Basic hash bin node, used for most entries. 
+   */
+   static class Node<K,V> implements Map.Entry<K,V> {
+        final int hash;		// hash = hash(key),hash()方法将在之后讲解到
+        final K key;		
+        V value;			
+	     Node<K,V> next;		//next指针
 			
-			//重写了hashcode()方法.
-			//定义Node.hashcode = key.hashCode 异或 value.hashcode
-        	public final int hashCode() {
-            	return Objects.hashCode(key) ^ Objects.hashCode(value);
-        	}
-
-        	public final V setValue(V newValue) {
-            	V oldValue = value;
-            	value = newValue;
-            	return oldValue;
-        	}
-
-			//重写了hashcode()方法，自然也要重写equals()方法与与之匹配
-        	public final boolean equals(Object o) {
-            	//如果内存起始地址相同，则认为两个对象相等.
-            	if (o == this)
-                	return true;
+		//重写了hashcode()方法.
+   	//定义Node.hashcode = key.hashCode 异或 value.hashcode
+        public final int hashCode() {
+            return Objects.hashCode(key) ^ Objects.hashCode(value);
+     }
+   
+        public final V setValue(V newValue) {
+            V oldValue = value;
+            value = newValue;
+            return oldValue;
+     }
+	
+   	//重写了hashcode()方法，自然也要重写equals()方法与与之匹配
+        public final boolean equals(Object o) {
+            //如果内存起始地址相同，则认为两个对象相等.
+            if (o == this)
+                return true;
                 //否则若o是Entry对象，比较k-v对的 k 与 v 是否相等
-            	if (o instanceof Map.Entry) {
-                	Map.Entry<?,?> e = (Map.Entry<?,?>)o;
-                	if (Objects.equals(key, e.getKey()) &&
-                    	Objects.equals(value, e.getValue()))
-                    	return true;
-            	}
-            	return false;
-        	}
-    	}
+            if (o instanceof Map.Entry) {
+                Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+                if (Objects.equals(key, e.getKey()) &&
+                    Objects.equals(value, e.getValue()))
+                    return true;
+            }
+            return false;
+        }
+	 }
 	```
  ### 构造函数
 需要注意的是，Node数组并不是在构造函数中去new出来(除去形参为map的构造函数)，而是在进行**put()操作**时才被创建出来，构造函数主要负责`initialCapacity`和`loadFactor`的**赋值操作**。
 ```java
-	//空构造函数，使用默认的初始化容量和装载因子
+    //空构造函数，使用默认的初始化容量和装载因子
     public HashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR; // all other fields defaulted
     }
@@ -210,7 +211,6 @@ HashMap：以键值对存储元素的数据结构。其主干是一个**Node数�
         //不过此时数组并没有被创建，在下面的put操作中的创建数组(reize方法)时会重新赋值给threshold.
         this.threshold = tableSizeFor(initialCapacity);
     }
-	
 ```
 - `tableSizeFor(int cap)`方法详解
 	```java
@@ -231,11 +231,12 @@ HashMap：以键值对存储元素的数据结构。其主干是一个**Node数�
 	```
 	整个方法的核心是 `n |= n >>>1`， `>>>`操作为无符号右移，移位后高位补零，之后在进行异或操作。 `n |= n >>> x位`操作的本质是对**二进制n的最高位1的后x位**进行**置一**操作，当进行到最后一步`n |= n >>> 16`即完成了32位的 **二进制n的最高位1之后的所有位全部置一**的操作在进行最后的**加一**操作也就是完成了 **大于等于n的最小的二进制数**。
 	首先**找到等于大于n的最小的二进制数**可以转换为：**n的二进制的最高位1的前一位置1，后面都置零**(除非n正好为二次幂，则返回n）。比如n=33，则**0010 0001**转换为**0100 0000**，为了实现这一目的，我们可以分为两步来走：
+	
 	1. 将n的二进制的最高位1的后面全部置1，即**0010 0001**变为**0011 1111**。
 	2. +1操作，即**0011 1111** + 1 = **0100 0000** (64)。
 	
 	其中`n |= n >>>1`完成的上述步骤1，这里我们用图示来进行形象解释。需要注意的是，实际函数中n的最大值为`MAXIMUM_CAPACITY`即(2^30)，这里只是为了解释针对32位的int，最后一步为`n |= n >>>16`能保证最高位1之后的每一位都置一。
-<img src="./img/tableSizeFor方法详解.png"/>
+	<img src="./img/tableSizeFor方法详解.png"/>
 	其中`int n = cap - 1;` 的作用为在进行置一操作前先减一，否则当n正好为二次幂时，最后返回的结果为**2n**（实际期望返回结果为n）。所以可以先减一（此时高位1为原高位1的后一位），再进行**高位1之后位 置一**再**加一**的操作，最后得到n。
 
 ### put操作
@@ -252,8 +253,11 @@ HashMap：以键值对存储元素的数据结构。其主干是一个**Node数�
 	  原 来 的  hashcode值: 1111 1111 1111 1111 0100 1100 0000 1010
 	  移 位 后 的hashcode: 0000 0000 0000 0000 1111 1111 1111 1111
 	  异或后最终的hash值: 1111 1111 1111 1111 1011 0011 1111 0101	  
+	
 - `resize()`方法
-方法用于put操作中，触发条件为：
+
+	方法用于put操作中，触发条件为：
+	
 	- table为空，进行table的创建和相关初始化操作。
 	- table不为空，达到threshold后需要进行扩容操作，扩容至原数组capacity的两倍。
 
@@ -375,72 +379,75 @@ final Node<K,V>[] resize() {
 ```
 1. `Node.hash & (newCpa - 1)` 公式讲解
 
-该公式出现在扩容后 旧数组某一下标元素为单元素的情况下，将该元素放置到新数组的`[Node.hash & (newCap - 1)]`位置上。该计算公式`Node.hash & (newCpa - 1)`其实来自于put操作中添加键值对时放置的位置`i = (n - 1) & hash`，为了保证一致性，所以resize操作时规定了单元素进行rehash后放置的位置为`[Node.hash & (newCap - 1)]`。
+   该公式出现在扩容后 旧数组某一下标元素为单元素的情况下，将该元素放置到新数组的`[Node.hash & (newCap - 1)]`位置上。该计算公式`Node.hash & (newCpa - 1)`其实来自于put操作中添加键值对时放置的位置`i = (n - 1) & hash`，为了保证一致性，所以resize操作时规定了单元素进行rehash后放置的位置为`[Node.hash & (newCap - 1)]`。
 
-<img src="./img/putVal代码图.png"/>、
+   <img src="./img/putVal代码图.png"/>、
 
-那么为什么进行添加键值对时规定放置的位置为：`i = (n - 1) & hash`呢？其实这是相当于哈希中取模的操作，在最初始的哈希定义中放置的位置`i = hash % n`从而保证`0 ≤ i ≤ n`，而取模操作的运算效率很慢，在计算机中位操作的效率更高，所以取而代之使用`hash & (n-1)`来保证最终的位置i是一个有效值(0 ≤ i ≤ n-1)。
-<img src="./img/与运算.png"/>
+   那么为什么进行添加键值对时规定放置的位置为：`i = (n - 1) & hash`呢？其实这是相当于哈希中取模的操作，在最初始的哈希定义中放置的位置`i = hash % n`从而保证`0 ≤ i ≤ n`，而取模操作的运算效率很慢，在计算机中位操作的效率更高，所以取而代之使用`hash & (n-1)`来保证最终的位置i是一个有效值(0 ≤ i ≤ n-1)。
+
+   <img src="./img/与运算.png"/>
 
 
 
  2. `e.hash & oldCap` 公式讲解
-该公式来自于`resize()`方法中计算完新数组的`newCap`和`newThr`变量的赋值后，对旧数组的某一元素(是链表的情况下)链表上的键值对进行重新平衡。平衡操作的核心在于链表上的每一个元素e根据 e.hash & oldCap是否等于0进行区分
-	- e.hash & oldCap == 0, 把e放到`low`链表中，low链表仍然放在原来的位置`j`上
-	- e.hash & oldCap != 0, 把e放到`high`链表中，high链表放在位置`j + oldCap`上
 
+   该公式来自于`resize()`方法中计算完新数组的`newCap`和`newThr`变量的赋值后，对旧数组的某一元素(是链表的情况下)链表上的键值对进行重新平衡。平衡操作的核心在于链表上的每一个元素e根据 e.hash & oldCap是否等于0进行区分
+   - e.hash & oldCap == 0, 把e放到`low`链表中，low链表仍然放在原来的位置`j`上
+   - e.hash & oldCap != 0, 把e放到`high`链表中，high链表放在位置`j + oldCap`上
 >> 根据这个分类原则也就实现了把**旧数组下标j**上的的**桶链表**平衡分配到了**新数组的下标j 和 j+oldCap**上，接下来我们来详细讲解一下链表元素重新平衡的实现过程。
 我们举两个元素`e1`和`e2`，他们的key为`key1`和`key2`，假设oldCap=16，那么扩容后newCap则为32。那么根据put操作中定义的元素所在位置`i = Node.hash & (n - 1)`(capacity为数组容量即数组长度即n)计算出resize()后的位置。
 
-<img src="./img/resize方法图解.png"/>
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20201119172725794.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2hlcm9lczEzNA==,size_16,color_FFFFFF,t_70#pic_center)
-根据图片可以看出来，扩容后元素e的位置只能为`原位置i`或`原位置i+oldCap`，而决定是哪一种则是由**元素本身hash值的高位为1还是为0**，判断其高位为0还是1非常简单，**将其与仅该高位为1的元素进行与操作即可**，即与oldCap进行与操作。对于高位为0的元素其 hash & **oldCap** = 0，否则不为0，也就解释了上述的 `e.hash & oldCap` 公式。
-其实要理解这两个公式也非常简单，只要抓住主线hashmap中定义某个元素位置`i = Node.hash & n-1`即可，这些操作都是为了跟这个最初始的公式保持一致性而定义的。
+   <img src="./img/resize方法图解.png"/>
+   <img src="./img/resize方法图解2.png"/>
+   根据图片可以看出来，扩容后元素e的位置只能为`原位置i`或`原位置i+oldCap`，而决定是哪一种则是由**元素本身hash值的高位为1还是为0**，判断其高位为0还是1非常简单，**将其与仅该高位为1的元素进行与操作即可**，即与oldCap进行与操作。对于高位为0的元素其 hash & **oldCap** = 0，否则不为0，也就解释了上述的 `e.hash & oldCap` 公式。
+   其实要理解这两个公式也非常简单，只要抓住主线hashmap中定义某个元素位置`i = Node.hash & n-1`即可，这些操作都是为了跟这个最初始的公式保持一致性而定义的。
 
-	3. 链表元素rehash的平衡操作
-	接下来来讲解一下具体如何进行链表上的元素放到low链表和high链表中。该操作的代码可以精简为：
-	
-	```java
-	//low链表的头结点和尾结点
-	Node<K,V> loHead = null, loTail = null;
-	do{
-	 	//获取链表下一元素
-	    	next = e.next;
-	    	//根据定义的条件把该元素放入low链表中
-	    	if ((e.hash & oldCap) == 0) {
-	    		//low链表放入第一个元素时，让head结点指向该元素
-	        	if (loTail == null)
-	             loHead = e;
-	       	else
-	             //除了链表放入第一个元素的情况，置尾结点的next元素为e，即将e添加到链表最末端
-	        		loTail.next = e;
-	        	//tail结点指向新增加元素
-	       	loTail = e;
-	     }
-	 }while((e = next) != null);
-	 //low链表非空的情况下，将head元素放在数组对应的位置上
-	 if (loTail != null) {
-	 	//置队尾元素的next指针为空
-	 	loTail.next = null;
-	 	newTab[j] = loHead;
-	}
-	```
+ 3. 链表元素rehash的平衡操作
+      接下来来讲解一下具体如何进行链表上的元素放到low链表和high链表中。该操作的代码可以精简为：
+
+```java
+//low链表的头结点和尾结点
+Node<K,V> loHead = null, loTail = null;
+do{
+ 	//获取链表下一元素
+    	next = e.next;
+    	//根据定义的条件把该元素放入low链表中
+    	if ((e.hash & oldCap) == 0) {
+    		//low链表放入第一个元素时，让head结点指向该元素
+        	if (loTail == null)
+             loHead = e;
+       	else
+             //除了链表放入第一个元素的情况，置尾结点的next元素为e，即将e添加到链表最末端
+        		loTail.next = e;
+        	//tail结点指向新增加元素
+       	loTail = e;
+     }
+ }while((e = next) != null);
+ //low链表非空的情况下，将head元素放在数组对应的位置上
+ if (loTail != null) {
+ 	//置队尾元素的next指针为空
+ 	loTail.next = null;
+ 	newTab[j] = loHead;
+}
+```
 
 - `put(K key, V value)`方法
-`HashMap`中添加键值对的方式，其具体实现方式使用`putVal()`函数
+   `HashMap`中添加键值对的方式，其具体实现方式使用`putVal()`函数
+	
 	```java
-	public V put(K key, V value) {
+  public V put(K key, V value) {
     	 return putVal(hash(key), key, value, false, true);
     }
     //自定义key的hash值计算函数
     static final int hash(Object key) {
         int h;
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
-    }
+	  }
 	```
 - `putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict)`方法
+	
 	```java
-	final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+  final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
                    boolean evict) {
         //Node数组tab, 临时变量Node p
         Node<K,V>[] tab; Node<K,V> p; int n, i;
@@ -500,7 +507,7 @@ final Node<K,V>[] resize() {
             resize();
         afterNodeInsertion(evict);
         return null;
-    }
+	  }
 	```
 
 ### get操作
@@ -647,21 +654,23 @@ final Node<K,V> getNode(int hash, Object key) {
    ```
 
 6. hashmap的数组长度为什么一定为2的次幂，如何保证这一特性？
- 在hashmap的**put**操作中，下标为`i = (n - 1) & hash`。
+   在hashmap的**put**操作中，下标为`i = (n - 1) & hash`。
 
  - 当n为二次幂时，n-1则为高位为0，剩余位为1，再加上 **a & 1 = a**，最后i的实际取值为为**hash值的低位**，这种情况下最后i的实际取值为**0到n-1**，这样就保证了均匀hash到数组上(均匀由hash值的计算来实现，**&(n-1)只是保证了散列到数组上的每个下标上去**)
  - 当n不为二次幂时，n-1的低位肯定存在0，再加上 **a & 0 = 0**，最后的计算结果肯定会导致数组中的某些下标利用不到。
 
- <img src="./img/数组为什么要为二次幂长度.png"/>
- 从上图中可以看出，当n为二次幂(n=128)时，最终i的取值为**0到n-1**；当n不为二次幂(n=127)时，最终i的取值的最后一位始终为0，会导致**0到n-1**中有些值取不到，从而浪费了对应的数组下标的内存空间。
+   <img src="./img/数组为什么要为二次幂长度.png"/>
 
- 另外也可以看出为什么**hash值 = k.hashcode & k.hashcode >>> 16**？
- 在上图左边红框中可以看出，最后**hash到的位置**基本上取决于**hash值的低位**(n在大部分情况下取值很小)，如果直接使用hashcode作为hash值，那么会导致冲突的可能性增大，而**保留高位，低位^高位=低位**的做法会大大降低冲突的可能性。
+   从上图中可以看出，当n为二次幂(n=128)时，最终i的取值为**0到n-1**；当n不为二次幂(n=127)时，最终i的取值的最后一位始终为0，会导致**0到n-1**中有些值取不到，从而浪费了对应的数组下标的内存空间。
 
- **如何保证数组长度为2的次幂?**
- 首先在hashmap的初始化过程中，数组的容量要么为**初始指定的16**要么为**向上取整的二次幂**（通过`tableSizeFor`实现），其次扩容的策略为**每次扩容为原来的两倍**，这样就保证了数组的长度始终为二次幂。
+   另外也可以看出为什么**hash值 = k.hashcode & k.hashcode >>> 16**？
+   在上图左边红框中可以看出，最后**hash到的位置**基本上取决于**hash值的低位**(n在大部分情况下取值很小)，如果直接使用hashcode作为hash值，那么会导致冲突的可能性增大，而**保留高位，低位^高位=低位**的做法会大大降低冲突的可能性。
+
+   **如何保证数组长度为2的次幂?**
+     首先在hashmap的初始化过程中，数组的容量要么为**初始指定的16**要么为**向上取整的二次幂**（通过`tableSizeFor`实现），其次扩容的策略为**每次扩容为原来的两倍**，这样就保证了数组的长度始终为二次幂。
 
 7. jdk1.8以后，hashmap为什么要引入红黑树，这样做带来什么好处？
+    
     在1.8之前，hashmap的实现方式是**数组+链表**，当数组同一下标位置上有多个元素时，使用链表存储这些hash值相同的元素，链表插入采用**头插法**。
 - 采用头插法可以保证插入为O(1)，可以保证后写入的值在每个链表的前端，默认后写的值被查找的可能性大一些，所以为了提高查找效率采用头插法。
     - 在链表中查找一个元素时，需要遍历链表，查找复杂度为O(n)，效率不高。
