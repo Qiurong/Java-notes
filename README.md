@@ -9,4 +9,4 @@
 
 ## 2. 字符串处理
 
-### [HashMap详解](./String-notes/字符串笔记.md)
+### [字符串详解](./String-notes/字符串笔记.md)
