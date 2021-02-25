@@ -11,3 +11,6 @@
 
 - [字符串详解](./String-notes/字符串笔记.md)
 
+## 3. 二进制操作
+
+- [位操作笔记](./BitOperation-notes/位操作笔记.md)
