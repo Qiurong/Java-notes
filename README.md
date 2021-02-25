@@ -13,4 +13,4 @@
 
 ## 3. 二进制操作
 
-- [位操作笔记](./BitOperation-notes/位操作笔记.md)
+- [位操作笔记](./bitOperation-notes/位操作笔记.md)
