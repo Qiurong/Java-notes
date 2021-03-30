@@ -104,7 +104,7 @@ ArrayList底层数据结构为**object数组**。
         // overflow-conscious code
         if (minCapacity - elementData.length > 0)
             grow(minCapacity);
-    }}
+    }
 ```
 - `grow`函数：扩容的核心函数。
 	- 其基本策略为扩容为原数组lenght的1.5倍(向下取整)，`newCapacity = oldCapacity + (oldCapacity >> 1)`。
@@ -232,10 +232,10 @@ LinkedList底层数据结构是一个**双向链表**。
     public void add(int index, E element) {
         checkPositionIndex(index);
   
-            if (index == size)
-                linkLast(element);
-            else
-                linkBefore(element, node(index));
+        if (index == size)
+            linkLast(element);
+        else
+            linkBefore(element, node(index));
     }
 	```
 	-  将元素e增加到index位置的元素之前。
@@ -258,10 +258,10 @@ LinkedList底层数据结构是一个**双向链表**。
                 x = x.next;
             return x;
         } else {
-                Node<E> x = last;
-                for (int i = size - 1; i > index; i--)
-                    x = x.prev;
-                return x;
+            Node<E> x = last;
+            for (int i = size - 1; i > index; i--)
+                x = x.prev;
+            return x;
         }
     }
     /**
