@@ -138,14 +138,39 @@ ArrayList底层数据结构为**object数组**。
 **3. 增**
 
 - `add(E e)`：**O(1)**
+
+  ```java
+  //确保底层elementData数组的长度 > size + 1
+  //把e添加在表尾
+  public boolean add(E e) {
+          ensureCapacityInternal(size + 1);  // Increments modCount!!
+          elementData[size++] = e;
+          return true;
+  }
+  ```
+
 - `add(int index, E e)`：**O(n)**.
-主要耗时在将index位置及之后的元素向后移动一位。O(n-index)
-`System.arraycopy(Object src, int srcPos, Object dest, int destPos, int length)`：将`src`数组从`srcPos`下标开始长度为`length`的子数组移动到数组`dest`,开始下标为`destPos`。
+  主要耗时在将index位置及之后的元素向后移动一位。**O(n-index)**
+
+  ```java
+  public void add(int index, E element) {
+          
+      rangeCheckForAdd(index);
+  
+      ensureCapacityInternal(size + 1);  // Increments modCount!!
+      //arraycopy(Object src,  int  srcPos, Object dest, int destPos, int length)
+      //把src数组的以srcPos为开始下标的子数组 移至 dest数组的以destPos为下标的位置中, 子数组长度为length
+      System.arraycopy(elementData, index, elementData, index + 1, size - index);
+      elementData[index] = element;
+      size++;
+  }
+  ```
 
 **4. 删**
 
 - `remove(int index)`：**O(n)**.
-找到这个index元素为O(1)，移除之后调用`System.arraycopy()`函数来完成数组的改变为O(n)。
+  找到这个index元素为O(1)，找到之后调用`System.arraycopy()`函数来完成数组的改变为O(n)。
+
 - `remove(Object o)`：**O(n)**
 寻找这个元素为O(n)，找到之后再调用`System.arraycopy()`也为O(n)，总的也为O(n)。
 
@@ -156,6 +181,25 @@ ArrayList底层数据结构为**object数组**。
 **6. 查**
 
 - `get(int index)`：**O(1)**.
+
+- `indexOf(Object o)`：**O(n)**。就是遍历数组
+
+  ```java
+  public int indexOf(Object o) {
+      if (o == null) {
+          for (int i = 0; i < size; i++)
+              if (elementData[i]==null)
+                      return i;
+      } else {
+          for (int i = 0; i < size; i++)
+              if (o.equals(elementData[i]))
+                  return i;
+      }
+      return -1;
+  }
+  ```
+
+  
 ## LinkedList
 
 LinkedList底层数据结构是一个**双向链表**。
@@ -239,7 +283,7 @@ LinkedList底层数据结构是一个**双向链表**。
     }
 	```
 	-  将元素e增加到index位置的元素之前。
-		- 先找到index位置的node(`succ`)，使用折半查找，**O(n/2)**
+		- `node(index)`：先找到index位置对应的元素。使用折半查找，**O(n/2)**
 		- 插入元素newnode.
 			- newnode.prev = succ.prev(pred)
 			- newnode.next = succ
@@ -283,7 +327,7 @@ LinkedList底层数据结构是一个**双向链表**。
 
 **3. 删**
 
-- `remove(E e)`：找到并移除这个元素（第一次出现）。**O(n)**
+- `remove(E e)`：找到并移除这个元素（遍历寻找第一次出现）。**O(n)**
 
 - `remove(int index)`：移除index位置的元素。**O(n)**
 	
@@ -369,6 +413,12 @@ LinkedList底层数据结构是一个**双向链表**。
 
 - ArrayList由于下标的存在，是可以随机访问的，只要给定一个index可以直接取到对应的元素，因此其get()和set()方法为O(1)，而对应的LinkedList这两个操作则为O(n)。
 - 在**增**操作中(删操作同理)
-	- `add(E e)`是在尾部加元素，ArrayList虽然会出现扩容的情况，但均摊复杂度还是O(1)；而LinkedList由于双链表last指针的存在，也是O(1)。
-	- `add(int index, E e)`是在指定位置加元素。这个操作涉及两部分，**首先**是找到这个位置的元素，ArrayList为O(1)，LinkedList为**O(|N/2 - index|)**(参考`node(int index)`函数)；**其后**ArrayList需要移动O(N-index)个位置，LinkedList则完成指针的对应操作即可O(1)。因此，该操作LinkedList较好。
+	- `add(E e)`：在尾部加元素，ArrayList虽然会出现扩容的情况，但均摊复杂度还是O(1)；而LinkedList由于双链表last指针的存在，也是O(1)。
+	
+	- `add(int index, E e)`：在指定位置加元素。这个操作涉及两部分。
+	
+	  - **首先**是找到这个位置的元素，ArrayList为O(1)，LinkedList为**O(|N/2 - index|)**(参考`node(int index)`函数)；
+	  - **其后**ArrayList需要移动O(N-index)个位置，LinkedList则完成指针的对应操作即可O(1)。
+	
+	  因此，该操作LinkedList较好。
 - 大部分情况下**改查多用ArrayList**，**增删多用LinkedList**。
