@@ -147,9 +147,8 @@ final float loadFactor;
             }
             return false;
         }
-        
     }
-	```
+   ```
  ### 构造函数
 需要注意的是，Node数组并不是在构造函数中去new出来(除去形参为map的构造函数)，而是在进行**put()操作**时才被创建出来，构造函数主要负责`initialCapacity`和`loadFactor`的**赋值操作**。
 ```java
@@ -261,9 +260,12 @@ public HashMap(int initialCapacity, float loadFactor) {
 	```
 	
 	其中 hash = (h = key.hashCode()) ^ ( h >>> 16)。调用`Object.hashCode()`得到key的hashcode，之后右移16位(此时h的高位覆盖了原低位)，然后再进行异或操作。其本质是**保留高位**( a ^ 0 = a)，**新低位 = 高位 异或 低位**，这样做参杂的元素变多，生成的hash值的随机性增大。
-	  原 来 的  hashcode值: 1111 1111 1111 1111 0100 1100 0000 1010
-	  移 位 后 的hashcode: 0000 0000 0000 0000 1111 1111 1111 1111
-	  异或后最终的hash值: 1111 1111 1111 1111 1011 0011 1111 0101  
+	
+	原 来 的  hashcode值: 1111 1111 1111 1111 0100 1100 0000 1010
+	
+	移 位 后 的hashcode: 0000 0000 0000 0000 1111 1111 1111 1111
+	
+	异或后最终的hash值: 1111 1111 1111 1111 1011 0011 1111 0101  
 	
 - `resize()`方法
 
@@ -456,6 +458,7 @@ public HashMap(int initialCapacity, float loadFactor) {
       return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
 	}
 	```
+	
 - `putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict)`方法
 	
 	```java
