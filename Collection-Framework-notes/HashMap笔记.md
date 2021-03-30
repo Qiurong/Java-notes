@@ -201,7 +201,7 @@ public HashMap(int initialCapacity, float loadFactor) {
     if (initialCapacity > MAXIMUM_CAPACITY)
         initialCapacity = MAXIMUM_CAPACITY;
     if (loadFactor <= 0 || Float.isNaN(loadFactor))
-    throw new IllegalArgumentException("Illegal load factor: " + loadFactor);
+        throw new IllegalArgumentException("Illegal load factor: " + loadFactor);
     this.loadFactor = loadFactor;
     
     //tableSizeFor()用于返回 大于等于initialCapacity的最小二进制数
