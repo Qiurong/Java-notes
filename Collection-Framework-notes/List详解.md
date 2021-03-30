@@ -7,9 +7,9 @@ ArrayList底层数据结构为**object数组**。
  **1. 基本变量：**
 
 ```java
- 	/**
-     * Default initial capacity.
-     */
+    /**
+    * Default initial capacity.
+    */
     private static final int DEFAULT_CAPACITY = 10;
 
     /**
@@ -48,13 +48,13 @@ ArrayList底层数据结构为**object数组**。
  	- **初始化ArrayList时指定初始容量=0**，那么其`elementdata` = `EMPTY_ELEMENTDATA`，扩容时按照正常扩容策略进行扩容。
  	- `DEFAULTCAPACITY_EMPTY_ELEMENTDATA` 的引入是一个有趣的设计，在大多数情景下，大家初始化时都不指定初始容量，为了避免多次扩容，所以直接首次扩容到长度为10的数组，从而能够避免多次扩容的操作。
 ```java
-	/**
-     * Constructs an empty list with the specified initial capacity.
-     *
-     * @param  initialCapacity  the initial capacity of the list
-     * @throws IllegalArgumentException if the specified initial capacity is negative
-     */
-	public ArrayList(int initialCapacity) {
+    /**
+    * Constructs an empty list with the specified initial capacity.
+    *
+    * @param  initialCapacity  the initial capacity of the list
+    * @throws IllegalArgumentException if the specified initial capacity is negative
+    */
+    public ArrayList(int initialCapacity) {
         if (initialCapacity > 0) {
             this.elementData = new Object[initialCapacity];
         } else if (initialCapacity == 0) {
@@ -63,32 +63,32 @@ ArrayList底层数据结构为**object数组**。
             throw new IllegalArgumentException("Illegal Capacity: "+ initialCapacity);
         }
     }
-		/**
-     	* Constructs an empty list with an initial capacity of ten.
-    	 */
+    /**
+    * Constructs an empty list with an initial capacity of ten.
+    */
     public ArrayList() {
         this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
     }
     	
     private void ensureCapacityInternal(int minCapacity) {
-       if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
-           minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
-       }
+        if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+            minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
+        }
 
-       ensureExplicitCapacity(minCapacity);
-   	}
+        ensureExplicitCapacity(minCapacity);
+    }
 ```
 **2. 扩容策略。**
 
  - `ensureCapacityInternal`函数：针对`DEFAULTCAPACITY_EMPTY_ELEMENTDATA `将其扩容为容量为10。
 ```java
-	public boolean add(E e) {
+    public boolean add(E e) {
         ensureCapacityInternal(size + 1);  // Increments modCount!!
         elementData[size++] = e;
         return true;
     }
     
-	private void ensureCapacityInternal(int minCapacity) {
+    private void ensureCapacityInternal(int minCapacity) {
         if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
             minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
         }
@@ -98,7 +98,7 @@ ArrayList底层数据结构为**object数组**。
 ```
 - `ensureExplicitCapacity`函数：修改`modcount`，并判断是否需要扩容，若需要扩容则调用`grow`函数。
 ```java
-	private void ensureExplicitCapacity(int minCapacity) {
+    private void ensureExplicitCapacity(int minCapacity) {
         modCount++;
 
         // overflow-conscious code
@@ -111,12 +111,12 @@ ArrayList底层数据结构为**object数组**。
 	- 得到的`newCapacity`与`minCapacity`比较取大值。
 	- 当`newCapacity`大于规定的`MAX_ARRAY_SIZE`(Integer的最大值-8)时，判断`minCapacity`是否大于`MAX_ARRAY_SIZE`，如果大于则取`Integer.MAX_VALUE`，否则取`MAX_ARRAY_SIZE`。
 ```java
-	/**
-     * Increases the capacity to ensure that it can hold at least the
-     * number of elements specified by the minimum capacity argument.
-     *
-     * @param minCapacity the desired minimum capacity
-     */
+    /**
+    * Increases the capacity to ensure that it can hold at least the
+    * number of elements specified by the minimum capacity argument.
+    *
+    * @param minCapacity the desired minimum capacity
+    */
     private void grow(int minCapacity) {
         // overflow-conscious code
         int oldCapacity = elementData.length;
@@ -132,9 +132,7 @@ ArrayList底层数据结构为**object数组**。
     private static int hugeCapacity(int minCapacity) {
         if (minCapacity < 0) // overflow
             throw new OutOfMemoryError();
-        return (minCapacity > MAX_ARRAY_SIZE) ?
-            Integer.MAX_VALUE :
-            MAX_ARRAY_SIZE;
+        return (minCapacity > MAX_ARRAY_SIZE) ? Integer.MAX_VALUE : MAX_ARRAY_SIZE;
     }
 ```
 **3. 增**
@@ -165,20 +163,20 @@ LinkedList底层数据结构是一个**双向链表**。
 **1. 基本变量**
 
 ```java
-	transient int size = 0;
+    transient int size = 0;
 
-   /**
-     * Pointer to first node.
-     * Invariant: (first == null && last == null) ||
-     *            (first.prev == null && first.item != null)
-     */
+    /**
+    * Pointer to first node.
+    * Invariant: (first == null && last == null) ||
+    *            (first.prev == null && first.item != null)
+    */
     transient Node<E> first;
 
     /**
-     * Pointer to last node.
-     * Invariant: (first == null && last == null) ||
-     *            (last.next == null && last.item != null)
-     */
+    * Pointer to last node.
+    * Invariant: (first == null && last == null) ||
+    *            (last.next == null && last.item != null)
+    */
     transient Node<E> last;
 
     private static class Node<E> {
@@ -211,9 +209,9 @@ LinkedList底层数据结构是一个**双向链表**。
         	return true;
   	}
 	
-  	/**
-      * Links e as last element.
-      */
+    /**
+    * Links e as last element.
+    */
     void linkLast(E e) {
         final Node<E> l = last;
         final Node<E> newNode = new Node<>(l, e, null);
@@ -224,21 +222,21 @@ LinkedList底层数据结构是一个**双向链表**。
             l.next = newNode;
         size++;
         modCount++;
-	  }
+    }
 	```
 	
 - `add(int index, E e)`：将元素e增加到指定位置。**O(n)**
 	
 	- index == size, e增加到表尾
 	```java
-  	public void add(int index, E element) {
-      	checkPositionIndex(index);
+    public void add(int index, E element) {
+        checkPositionIndex(index);
   
-        	if (index == size)
-            	linkLast(element);
-        	else
-            	linkBefore(element, node(index));
-	  	}
+            if (index == size)
+                linkLast(element);
+            else
+                linkBefore(element, node(index));
+    }
 	```
 	-  将元素e增加到index位置的元素之前。
 		- 先找到index位置的node(`succ`)，使用折半查找，**O(n/2)**
@@ -248,39 +246,39 @@ LinkedList底层数据结构是一个**双向链表**。
 			- succ.prev = newnode
 			- pred.next = newnode
 	```java
-  	/**
-     	* Returns the (non-null) Node at the specified element index.
-     	*/
-    	Node<E> node(int index) {
-	      	// assert isElementIndex(index);
+    /**
+    * Returns the (non-null) Node at the specified element index.
+    */
+    Node<E> node(int index) {
+        // assert isElementIndex(index);
   
-    	    if (index < (size >> 1)) {
-        	    Node<E> x = first;
-            	for (int i = 0; i < index; i++)
-                	x = x.next;
-            	return x;
-        	} else {
-            	Node<E> x = last;
-            	for (int i = size - 1; i > index; i--)
-                	x = x.prev;
-            	return x;
-        	}
-    	}
-    	/**
-     	* Inserts element e before non-null Node succ.
-     	*/
-    	void linkBefore(E e, Node<E> succ) {
-        	// assert succ != null;
-       	 	final Node<E> pred = succ.prev;
-        	final Node<E> newNode = new Node<>(pred, e, succ);
-        	succ.prev = newNode;
-        	if (pred == null)
-            	first = newNode;
-        	else
-            	pred.next = newNode;
-        	size++;
-        	modCount++;
-	  	}
+        if (index < (size >> 1)) {
+            Node<E> x = first;
+            for (int i = 0; i < index; i++)
+                x = x.next;
+            return x;
+        } else {
+                Node<E> x = last;
+                for (int i = size - 1; i > index; i--)
+                    x = x.prev;
+                return x;
+        }
+    }
+    /**
+    * Inserts element e before non-null Node succ.
+    */
+    void linkBefore(E e, Node<E> succ) {
+        // assert succ != null;
+        final Node<E> pred = succ.prev;
+        final Node<E> newNode = new Node<>(pred, e, succ);
+        succ.prev = newNode;
+        if (pred == null)
+            first = newNode;
+        else
+            pred.next = newNode;
+        size++;
+        modCount++;
+    }
 	```
 
 **3. 删**
@@ -290,29 +288,29 @@ LinkedList底层数据结构是一个**双向链表**。
 - `remove(int index)`：移除index位置的元素。**O(n)**
 	
 	```java
-  	public boolean remove(Object o) {
-        	if (o == null) {
-            	for (Node<E> x = first; x != null; x = x.next) {
-                	if (x.item == null) {
-                    	unlink(x);
-                    	return true;
-                	}
-            	}
-        	} else {
-            	for (Node<E> x = first; x != null; x = x.next) {
-                	if (o.equals(x.item)) {
-                    	unlink(x);
-                    	return true;
-                	}
-            	}
-        	}
-        	return false;
-	  	}
+    public boolean remove(Object o) {
+        if (o == null) {
+            for (Node<E> x = first; x != null; x = x.next) {
+                if (x.item == null) {
+                    unlink(x);
+                    return true;
+                }
+            }
+        } else {
+            for (Node<E> x = first; x != null; x = x.next) {
+                if (o.equals(x.item)) {
+                    unlink(x);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 		
-  	public E remove(int index) {
-        	checkElementIndex(index);
-        	return unlink(node(index));
-	  	}
+    public E remove(int index) {
+        checkElementIndex(index);
+        return unlink(node(index));
+    }
 	```
 
 
@@ -323,34 +321,34 @@ LinkedList底层数据结构是一个**双向链表**。
 	- next != null，prev.next = next，置x.next为空
 	- 如果不考虑prev和next为空的情况，由于已经将x.next和x.prev存储下来了，那么应该是prev.next = next, next.prev = prev,再加上置空操作。再加上考虑到prev和next为空的情况，这就是整个代码的思路。
 	```java
-		/**
-     	* Unlinks non-null node x.
-     	*/
-    	E unlink(Node<E> x) {
-        	// assert x != null;
-        	final E element = x.item;
-        	final Node<E> next = x.next;
-        	final Node<E> prev = x.prev;
+    /**
+    * Unlinks non-null node x.
+    */
+    E unlink(Node<E> x) {
+        // assert x != null;
+        final E element = x.item;
+        final Node<E> next = x.next;
+        final Node<E> prev = x.prev;
 
-        	if (prev == null) {
-            	first = next;
-        	} else {
-            	prev.next = next;
-            	x.prev = null;
-        	}
+        if (prev == null) {
+            first = next;
+        } else {
+            prev.next = next;
+            x.prev = null;
+        }
 
-        	if (next == null) {
-            	last = prev;
-        	} else {
-            	next.prev = prev;
-            	x.next = null;
-        	}
+        if (next == null) {
+            last = prev;
+        } else {
+            next.prev = prev;
+            x.next = null;
+        }
 
-        	x.item = null;
-        	size--;
-        	modCount++;
-        	return element;
-    	}
+        x.item = null;
+        size--;
+        modCount++;
+        return element;
+    }
   ```
 
 **4. 改**
