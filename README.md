@@ -17,3 +17,7 @@
 ## 4. 分布式
 
 - [Dubbo笔记](./distributed-system-notes/Dubbo笔记.md)
+
+## 5. Java工具类
+
+- [Arrays源码阅读笔记](./util-class-notes/Arrays-notes.md)
