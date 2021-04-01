@@ -5,6 +5,7 @@
 - [ArrayList与LinkeList源码阅读笔记](./Collection-Framework-notes/List详解.md)
 - [HashMap源码阅读笔记](./Collection-Framework-notes/HashMap笔记.md)
 - [红黑树详解](./Collection-Framework-notes/红黑树笔记.md)
+- [HashMap常用操作笔记](./Collection-Framework-notes/HashMap-operation.md)
 
 ## 2. 字符串处理
 
