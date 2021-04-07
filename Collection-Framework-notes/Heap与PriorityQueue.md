@@ -122,7 +122,7 @@ private void heapify() {
 - siftDown(Index i, Element e)
 
   ```java
-//在k下标插入元素x，并不断将x向下迭代直至满足最小堆要求(x <= 其叶子节点)
+  //在k下标插入元素x，并不断将x向下迭代直至满足最小堆要求(x <= 其叶子节点)
   private void siftDown(int k, E x) {
       if (comparator != null)
           siftDownUsingComparator(k, x);
@@ -157,6 +157,7 @@ private void heapify() {
       queue[k] = x;
   }
   ```
+  
   
 
 ### 增
