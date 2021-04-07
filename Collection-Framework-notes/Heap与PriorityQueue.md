@@ -314,5 +314,5 @@ public boolean offer(E e) {
 
 - [一分钟带你学懂——什么是堆？](https://zhuanlan.zhihu.com/p/262129810)
 - [数据结构与算法(4)——优先队列和堆](https://www.cnblogs.com/wmyskxz/p/9301021.html)
-- [堆](https://leetcode-cn.com/circle/articles/?tag=heap)
+- [堆](https://leetcode-cn.com/tag/heap/)
 
