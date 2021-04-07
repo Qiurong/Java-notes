@@ -38,6 +38,8 @@
 
 优先队列（Priority queue）也是一种队列，不过区别于传统队列的**先进先出**，优先队列的出队顺序是**按照优先级**来的。在插入一个元素之后，会根据定义的优先级把最大/最小的元素放在队列首部。
 
+可以在O(1)时间内获得最大/最小值，可以在O(logn)时间内插入任意值。
+
 Java中给出的`Priority queue`位于`java.util`包下，默认情况下对应的是**最小堆**。
 
 ### 基本变量
@@ -159,7 +161,7 @@ private void heapify() {
 
 ### 增
 
-增操作有add(E e)和offer(E e)，两个几乎无区别。只是插入失败时，前者抛异常，后者返回false。
+增/插入操作有**add(E e)**和**offer(E e)**，两个几乎无区别。只是插入失败时，前者抛异常，后者返回false。
 
 ```java
 public boolean add(E e) {
@@ -197,27 +199,115 @@ public boolean offer(E e) {
   }
   
   private void siftUpUsingComparator(int k, E x) {
+      //没有父结点即k<0停止迭代
       while (k > 0) {
+          //父结点 parent index = (x-1)/2
           int parent = (k - 1) >>> 1;
           Object e = queue[parent];
+          //最小堆：父结点<=任意子结点
+          //则子结点大于父结点，停止迭代
           if (comparator.compare(x, (E) e) >= 0)
               break;
+          //赋值父结点值给当前节点
           queue[k] = e;
+        //往上迭代
           k = parent;
       }
+      //在k处赋值x
       queue[k] = x;
   }
   ```
-
   
 
 ### 删
 
+- poll()：移除队首元素
 
+  > 把队首元素出队，把队尾元素放在队首然后siftDown。
+
+  ```java
+  public E poll() {
+      if (size == 0)
+          return null;
+      //队尾元素下标
+      int s = --size;
+      modCount++;
+      //队首元素
+      E result = (E) queue[0];
+      //队尾元素
+      E x = (E) queue[s];
+      //队尾置空
+      queue[s] = null;
+      //队尾元素不是队首的话，把队尾元素放在队首并siftDown
+      if (s != 0)
+          siftDown(0, x);
+      return result;
+  }
+  ```
+
+- remove(Object o)：移除指定元素
+
+  > 同poll()操作，找到object的下标i后，移除i处元素，把队尾元素放在i处，然后siftDown
+
+  ```java
+  public boolean remove(Object o) {
+      int i = indexOf(o);
+      if (i == -1)
+          return false;
+      else {
+          removeAt(i);
+          return true;
+      }
+  }
+  
+  //移除index i处的元素
+  private E removeAt(int i) {
+      // assert i >= 0 && i < size;
+      modCount++;
+      int s = --size;
+      //i为队尾元素，直接移除
+      if (s == i) // removed last element
+          queue[i] = null;
+      else {
+          //moved:队尾元素
+          E moved = (E) queue[s];
+          //队尾置空
+          queue[s] = null;
+          //把队尾放在i处，并siftDown
+          siftDown(i, moved);
+          //若队尾元素没有下沉，则需要在进行上浮操作
+          if (queue[i] == moved) {
+              siftUp(i, moved);
+              if (queue[i] != moved)
+                  return moved;
+          }
+      }
+      return null;
+  }
+  ```
 
 ### 查
 
+- peek()：获取但不删除队首元素  O(1)
 
+  ```java
+  public E peek() {
+      return (size == 0) ? null : (E) queue[0];
+  }
+  ```
+
+- indexOf(Object o)：返回某个元素的下标
+
+  ```java
+  private int indexOf(Object o) {
+      if (o != null) {
+          for (int i = 0; i < size; i++)
+              if (o.equals(queue[i]))
+                  return i;
+      }
+      return -1;
+  }
+  ```
 
 ## 参考文献
 
