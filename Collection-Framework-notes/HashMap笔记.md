@@ -700,3 +700,11 @@ final Node<K,V> getNode(int hash, Object key) {
     红黑树的查找、插入、删除的时间复杂度最坏为O(log n)，加快了检索速度，在1.8之后，当链表长度达到8时会链表会变成红黑树从而加快检索速度。
 
     此外jdk1.8之后**改头插法为尾插法**，主要是为了安全，**防止环化**。
+    
+8. Hashtable和HashMap区别？
+
+    两者本质上都是键值对数组，有一些细微的差别。
+
+    - 父类不一样。Hashtable符类dictionary类，HashMap父类是abstractMap。dictionary类已经被弃用
+    - 线程安全性不一样。Hashtable线程安全，HashMap线程不安全，要安全的话可以用ConcurrentHashMap。
+    - 对null值处理不一样。Hashtable不允许key和value为null，HashMap允许key和value为null，但多条记录的key为null的话，只存在一条记录。
