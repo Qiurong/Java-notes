@@ -56,6 +56,7 @@
 
 - 问题
   多路复用之后，多个HTTP请求复用一个TCP连接，TCP发生了丢包问题之后，同一个TCP连接的所有HTTP请求都要等待这个丢掉的包重传。相当于丢包情况下，为解决队头堵塞问题的多路复用还是没用。
+  
   > 对于丢掉的这个TCP包，不知道属于哪个HTTP响应，所以只能所有请求都等待它重传回来。
 
 ##### HTTP3
@@ -65,6 +66,7 @@
 
 - 解决TCP丢包问题
   底部当成一个个流，对于某个流丢包，只阻塞这个流。
+  
   > 这里的流类似于HTTP2中的一个HTTP请求。
 
 ### 2. HTTPS
@@ -155,16 +157,13 @@ cookie分为会话cookie和永久性cookie。
   - Date:
   - Cache-Control:
   - Connection：决定是否长连接。keep-alive
-
 - 实体标头：描述信息正文内容的HTTP标头
   - Content-Length:
   - Accept-Encoding: 请求头
   - Content-Encoding: 响应头
-
 - 请求标头：
   - Host：服务器域名
   - Accept和Accept-Charset：客户端能处理的类型
-
 - 响应标头：
-  Keep-Alive：非持久化连接的存活时间
-  Set-Cookie：
+  - Keep-Alive：非持久化连接的存活时间
+  - Set-Cookie：
