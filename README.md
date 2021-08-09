@@ -12,6 +12,7 @@
 ## 2. 计算机基础
 
 - [计算机网络](computer_basics/计网.md)
+- [HTTP总结](computer_basics/HTTP总结.md)
 
 ## 3.Spring
 
