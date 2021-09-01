@@ -267,183 +267,187 @@ public HashMap(int initialCapacity, float loadFactor) {
 	
 	异或后最终的hash值: 1111 1111 1111 1111 1011 0011 1111 0101  
 	
+	hash值的获取是为了确定键值对在数组中的下标，而计算公式：**i = (n - 1) & hash**，决定了hash值只有低位有效，所以用**低位 = 高位 异或 低位 来确定新的低位**，从而减少哈希碰撞。
+	
 - `resize()`方法
 
-	方法用于put操作中，触发条件为：
-	
-	- table为空，进行table的创建和相关初始化操作。
-	- table不为空，达到threshold后需要进行扩容操作，扩容至原数组capacity的两倍。
-	
-	```java
-	final Node<K,V>[] resize() {
-	    //记录扩容前的数组
-	    Node<K,V>[] oldTab = table;
-	    //记录扩容前数组的容量
-	    int oldCap = (oldTab == null) ? 0 : oldTab.length;
-	    //记录扩容前的threshold
-	    int oldThr = threshold;
-	    //扩容后capacity和threshold的值
-	    int newCap, newThr = 0;
-	    //原数组不为空
-	    if (oldCap > 0) {
-	        //原数组capacity >= 2^30, 则设定下一次扩容门槛为Integer.MAX_VALUE，并且直接返回原数组，不进行任何扩容操作。
-	        if (oldCap >= MAXIMUM_CAPACITY) {
-	            threshold = Integer.MAX_VALUE;
-	            return oldTab;
-	        }
-	        //设新数组容量为原数组容量的两倍
-	        //新数组容量 < 最大容量 且 原数组容量>= 初始容量(16) 则 倍增下次扩容的门槛
-	        //这种情况是扩容操作中最常见的操作
-	        else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY)
-	            newThr = oldThr << 1; // double threshold
-	    }
-	    //原数组为空且原threshold>0，即对应 public HashMap(int initialCapacity, float loadFactor)和public HashMap(int initialCapacity)
-	    //在该两个构造函数中把二次幂化initialCapacity后的值放在了threshold中
-	    else if (oldThr > 0) // initial capacity was placed in threshold
-	        newCap = oldThr;
-	    //原数组为空且threshold==0，即对应public HashMap()
-	    //数组的capacity和threshold进行赋值
-	    else {               // zero initial threshold signifies using defaults
-	        newCap = DEFAULT_INITIAL_CAPACITY;
-	        newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
-	    }
-	    //承接上述 else if(oldThr > 0)的处理情况
-	    //在此情况中，原数组为空，newCap = oldThr, newThr = 0;
-	    //只要条件符合赋值newThr = newCap * loadFactor, 
-	    //否则newThr = Integer.MAX_VALUE)
-	    if (newThr == 0) {
-	        float ft = (float)newCap * loadFactor;
-	        newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ? (int)ft : Integer.MAX_VALUE);
-	    }
-	    //置下次扩容的门槛为计算出来的newThr
-	    threshold = newThr;
-	    
-	    //扩容操作的核心：在完成扩容操作中新数组newCap和newThr的值计算过程后，对原数组中的键值对进行重新平衡
-	    //新建一个容量为newCap的数组newTab
-	    Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
-	    table = newTab;
-	    if (oldTab != null) {
-	    //循环遍历旧数组中的每一个元素，将元素保存在临时变量e中
-	        for (int j = 0; j < oldCap; ++j) {
-	            Node<K,V> e;
-	            //当前下标j的元素不为空
-	            if ((e = oldTab[j]) != null) {
-	                //置旧数组当前位置的元素为空，方便之后进行GC
-	                oldTab[j] = null;
-	                //当前元素为单元素，不是链表
-	                if (e.next == null)
-	                    //将当前元素放置到新数组的[Node.hash & (newCpa - 1)]位置上, 该计算公司公式后文将进行讲解
-	                    //Node.hash = hash(key) = (h = key.hashCode()) ^ ( h >>> 16)
-	                    newTab[e.hash & (newCap - 1)] = e;
-	                //当前元素不是单元素，为树结构，进行分裂
-	                else if (e instanceof TreeNode)
-	                    ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);			   
-	                //当前元素为链表结构，进行rehash的算法
-	                else { 
-	                    Node<K,V> loHead = null, loTail = null;
-	                    Node<K,V> hiHead = null, hiTail = null;
-	                    Node<K,V> next;
-	                    //将链表中元素(e.hash & oldCap)是否为0进行分割，分成两个不同链表, low链表和high链表
-	                    //low链表放在新数组的下标j位置上
-	                    //high链表放在新数组的下标[j + oldCap]上
-	                    //每次扩容后newcap = oldcap的两倍，这样rehash的算法能保证尽量把链表上的元素尽量平均的rehash到两个位置上去.
-	                    do {
-	                        //每次循环获取当前元素e和下一元素next
-	                        next = e.next;
-	                        //如果 e.hash & oldCap == 0, 则为low链表
-	                        if ((e.hash & oldCap) == 0) {
-	                            //loTail为空，则为low链表的第一个元素
-	                            //将e赋值给loHead,
-	                            if (loTail == null)
-	                                loHead = e;
-	                            else
-	                                 loTail.next = e;
-	                           //将e赋值给loTail
-	                            loTail = e;
-	                        }
-	                        else {
-	                            if (hiTail == null)
-	                                hiHead = e;
-	                            else
-	                                hiTail.next = e;
-	                            hiTail = e;
-	                        }
-	                        //将next元素赋值给e且判断是否为空
-	                    } while ((e = next) != null);
-	                    if (loTail != null) {
-	                        loTail.next = null;
-	                        newTab[j] = loHead;
-	                    }
-	                    if (hiTail != null) {
-	                        hiTail.next = null;
-	                        newTab[j + oldCap] = hiHead;
-	                    }
-	                }
-	            }
-	        }
-	    }
-	    return newTab;
-	}
-	```
-	
-	1. `Node.hash & (newCpa - 1)` 公式讲解
-	
-	   该公式出现在扩容后 旧数组某一下标元素为单元素的情况下，将该元素放置到新数组的`[Node.hash & (newCap - 1)]`位置上。该计算公式`Node.hash & (newCpa - 1)`其实来自于put操作中添加键值对时放置的位置`i = (n - 1) & hash`，为了保证一致性，所以resize操作时规定了单元素进行rehash后放置的位置为`[Node.hash & (newCap - 1)]`。
-	
-	   <img src="./img/putVal代码图.png"/>、
-	
-	   那么为什么进行添加键值对时规定放置的位置为：`i = (n - 1) & hash`呢？其实这是相当于哈希中取模的操作，在最初始的哈希定义中放置的位置`i = hash % n`从而保证`0 ≤ i ≤ n`，而取模操作的运算效率很慢，在计算机中位操作的效率更高，所以取而代之使用`hash & (n-1)`来保证最终的位置i是一个有效值(0 ≤ i ≤ n-1)。
-	
-	   <img src="./img/与运算.png"/>
-	
-	2. `e.hash & oldCap` 公式讲解
-	
-	   该公式来自于`resize()`方法中计算完新数组的`newCap`和`newThr`变量的赋值后，对旧数组的某一元素(是链表的情况下)链表上的键值对进行重新平衡。平衡操作的核心在于链表上的每一个元素e根据 e.hash & oldCap是否等于0进行区分
-	
-	   - e.hash & oldCap == 0, 把e放到`low`链表中，low链表仍然放在原来的位置`j`上
-	   - e.hash & oldCap != 0, 把e放到`high`链表中，high链表放在位置`j + oldCap`上
-	
-	   > 根据这个分类原则也就实现了把**旧数组下标j**上的的**桶链表**平衡分配到了**新数组的下标j 和 j+oldCap**上，接下来我们来详细讲解一下链表元素重新平衡的实现过程。
-	   >
-	   > 我们举两个元素`e1`和`e2`，他们的key为`key1`和`key2`，假设oldCap=16，那么扩容后newCap则为32。那么根据put操作中定义的元素所在位置`i = Node.hash & (n - 1)`(capacity为数组容量即数组长度即n)计算出resize()后的位置。
-	
-	   <img src="./img/resize方法图解.png"/>
-	
-	   <img src="./img/resize方法图解2.png"/>
-	
-	   根据图片可以看出来，扩容后元素e的位置只能为`原位置i`或`原位置i+oldCap`，而决定是哪一种则是由**元素本身hash值的高位为1还是为0**，判断其高位为0还是1非常简单，**将其与仅该高位为1的元素进行与操作即可**，即与oldCap进行与操作。对于高位为0的元素其 hash & **oldCap** = 0，否则不为0，也就解释了上述的 `e.hash & oldCap` 公式。
-	
-	   其实要理解这两个公式也非常简单，只要抓住主线hashmap中定义某个元素位置`i = Node.hash & n-1`即可，这些操作都是为了跟这个最初始的公式保持一致性而定义的。
-	
-	3. 链表元素rehash的平衡操作
-	
-	   接下来来讲解一下具体如何进行链表上的元素放到low链表和high链表中。该操作的代码可以精简为：
-	
-	   ```java
-	   //low链表的头结点和尾结点
-	   Node<K,V> loHead = null, loTail = null;
-	   do{
-	       //获取链表下一元素
-	       next = e.next;
-	       //根据定义的条件把该元素放入low链表中
-	       if ((e.hash & oldCap) == 0) {
-	           //low链表放入第一个元素时，让head结点指向该元素
-	           if (loTail == null)
-	                loHead = e;
-	          	else
-	               //除了链表放入第一个元素的情况，置尾结点的next元素为e，即将e添加到链表最末端
-	               loTail.next = e;
-	               //tail结点指向新增加元素
-	          	loTail = e;
-	       }
-	   }while((e = next) != null);
-	   //low链表非空的情况下，将head元素放在数组对应的位置上
-	   if (loTail != null) {
-	       //置队尾元素的next指针为空
-	       loTail.next = null;
-	       newTab[j] = loHead;
-	   }
-	   ```
+  方法用于put操作中，触发条件为：
+
+  - table为空，进行table的创建和相关初始化操作。
+  - table不为空，达到threshold后需要进行扩容操作，扩容至原数组capacity的两倍。
+
+  ```java
+  final Node<K,V>[] resize() {
+      //记录扩容前的数组
+      Node<K,V>[] oldTab = table;
+      //记录扩容前数组的容量
+      int oldCap = (oldTab == null) ? 0 : oldTab.length;
+      //记录扩容前的threshold
+      int oldThr = threshold;
+      //扩容后capacity和threshold的值
+      int newCap, newThr = 0;
+      //原数组不为空
+      if (oldCap > 0) {
+          //原数组capacity >= 2^30, 则设定下一次扩容门槛为Integer.MAX_VALUE，并且直接返回原数组，不进行任何扩容操作。
+          if (oldCap >= MAXIMUM_CAPACITY) {
+              threshold = Integer.MAX_VALUE;
+              return oldTab;
+          }
+          //设新数组容量为原数组容量的两倍
+          //新数组容量 < 最大容量 且 原数组容量>= 初始容量(16) 则 倍增下次扩容的门槛
+          //这种情况是扩容操作中最常见的操作
+          else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY)
+              newThr = oldThr << 1; // double threshold
+      }
+      //原数组为空且原threshold>0，即对应 public HashMap(int initialCapacity, float loadFactor)和public HashMap(int initialCapacity)
+      //在该两个构造函数中把二次幂化initialCapacity后的值放在了threshold中
+      else if (oldThr > 0) // initial capacity was placed in threshold
+          newCap = oldThr;
+      //原数组为空且threshold==0，即对应public HashMap()
+      //数组的capacity和threshold进行赋值
+      else {               // zero initial threshold signifies using defaults
+          newCap = DEFAULT_INITIAL_CAPACITY;
+          newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+      }
+      //承接上述 else if(oldThr > 0)的处理情况
+      //在此情况中，原数组为空，newCap = oldThr, newThr = 0;
+      //只要条件符合赋值newThr = newCap * loadFactor, 
+      //否则newThr = Integer.MAX_VALUE)
+      if (newThr == 0) {
+          float ft = (float)newCap * loadFactor;
+          newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ? (int)ft : Integer.MAX_VALUE);
+      }
+      //置下次扩容的门槛为计算出来的newThr
+      threshold = newThr;
+      
+      //扩容操作的核心：在完成扩容操作中新数组newCap和newThr的值计算过程后，对原数组中的键值对进行重新平衡
+      //新建一个容量为newCap的数组newTab
+      Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
+      table = newTab;
+      if (oldTab != null) {
+      //循环遍历旧数组中的每一个元素，将元素保存在临时变量e中
+          for (int j = 0; j < oldCap; ++j) {
+              Node<K,V> e;
+              //当前下标j的元素不为空
+              if ((e = oldTab[j]) != null) {
+                  //置旧数组当前位置的元素为空，方便之后进行GC
+                  oldTab[j] = null;
+                  //当前元素为单元素，不是链表
+                  if (e.next == null)
+                      //将当前元素放置到新数组的[Node.hash & (newCpa - 1)]位置上, 该计算公司公式后文将进行讲解
+                      //Node.hash = hash(key) = (h = key.hashCode()) ^ ( h >>> 16)
+                      newTab[e.hash & (newCap - 1)] = e;
+                  //当前元素不是单元素，为树结构，进行分裂
+                  else if (e instanceof TreeNode)
+                      ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);			   
+                  //当前元素为链表结构，进行rehash的算法
+                  else { 
+                      Node<K,V> loHead = null, loTail = null;
+                      Node<K,V> hiHead = null, hiTail = null;
+                      Node<K,V> next;
+                      //将链表中元素(e.hash & oldCap)是否为0进行分割，分成两个不同链表, low链表和high链表
+                      //low链表放在新数组的下标j位置上
+                      //high链表放在新数组的下标[j + oldCap]上
+                      //每次扩容后newcap = oldcap的两倍，这样rehash的算法能保证尽量把链表上的元素尽量平均的rehash到两个位置上去.
+                      do {
+                          //每次循环获取当前元素e和下一元素next
+                          next = e.next;
+                          //如果 e.hash & oldCap == 0, 则为low链表
+                          if ((e.hash & oldCap) == 0) {
+                              //loTail为空，则为low链表的第一个元素
+                              //将e赋值给loHead,
+                              if (loTail == null)
+                                  loHead = e;
+                              else
+                                   loTail.next = e;
+                             //将e赋值给loTail
+                              loTail = e;
+                          }
+                          else {
+                              if (hiTail == null)
+                                  hiHead = e;
+                              else
+                                  hiTail.next = e;
+                              hiTail = e;
+                          }
+                          //将next元素赋值给e且判断是否为空
+                      } while ((e = next) != null);
+                      if (loTail != null) {
+                          loTail.next = null;
+                          newTab[j] = loHead;
+                      }
+                      if (hiTail != null) {
+                          hiTail.next = null;
+                          newTab[j + oldCap] = hiHead;
+                      }
+                  }
+              }
+          }
+      }
+      return newTab;
+  }
+  ```
+
+  1. `Node.hash & (newCpa - 1)` 公式讲解
+
+     该公式出现在扩容后 旧数组某一下标元素为单元素的情况下，将该元素放置到新数组的`[Node.hash & (newCap - 1)]`位置上。该计算公式`Node.hash & (newCpa - 1)`其实来自于put操作中添加键值对时放置的位置`i = (n - 1) & hash`，为了保证一致性，所以resize操作时规定了单元素进行rehash后放置的位置为`[Node.hash & (newCap - 1)]`。
+
+     另外，根据`node.hash`在即将扩容的那一位上是否为1，来决定了该结点是**留在原位**还是放到`oldCap + oldIndex`上。
+
+     <img src="./img/putVal代码图.png"/>、
+
+     那么为什么进行添加键值对时规定放置的位置为：`i = (n - 1) & hash`呢？其实这是相当于哈希中取模的操作，在最初始的哈希定义中放置的位置`i = hash % n`从而保证`0 ≤ i ≤ n`，而取模操作的运算效率很慢，在计算机中位操作的效率更高，所以取而代之使用`hash & (n-1)`来保证最终的位置i是一个有效值(0 ≤ i ≤ n-1)。
+
+     <img src="./img/与运算.png"/>
+
+  2. `e.hash & oldCap` 公式讲解
+
+     该公式来自于`resize()`方法中计算完新数组的`newCap`和`newThr`变量的赋值后，对旧数组的某一元素(是链表的情况下)链表上的键值对进行重新平衡。平衡操作的核心在于链表上的每一个元素e根据 e.hash & oldCap是否等于0进行区分
+
+     - e.hash & oldCap == 0, 把e放到`low`链表中，low链表仍然放在原来的位置`j`上
+     - e.hash & oldCap != 0, 把e放到`high`链表中，high链表放在位置`j + oldCap`上
+
+     > 根据这个分类原则也就实现了把**旧数组下标j**上的的**桶链表**平衡分配到了**新数组的下标j 和 j+oldCap**上，接下来我们来详细讲解一下链表元素重新平衡的实现过程。
+     >
+     > 我们举两个元素`e1`和`e2`，他们的key为`key1`和`key2`，假设oldCap=16，那么扩容后newCap则为32。那么根据put操作中定义的元素所在位置`i = Node.hash & (n - 1)`(capacity为数组容量即数组长度即n)计算出resize()后的位置。
+
+     <img src="./img/resize方法图解.png"/>
+
+     <img src="./img/resize方法图解2.png"/>
+
+     根据图片可以看出来，扩容后元素e的位置只能为`原位置i`或`原位置i+oldCap`，而决定是哪一种则是由**元素本身hash值的高位为1还是为0**，判断其高位为0还是1非常简单，**将其与仅该高位为1的元素进行与操作即可**，即与oldCap进行与操作。对于高位为0的元素其 hash & **oldCap** = 0，否则不为0，也就解释了上述的 `e.hash & oldCap` 公式。
+
+     其实要理解这两个公式也非常简单，只要抓住主线hashmap中定义某个元素位置`i = Node.hash & n-1`即可，这些操作都是为了跟这个最初始的公式保持一致性而定义的。
+
+  3. 链表元素rehash的平衡操作
+
+     接下来来讲解一下具体如何进行链表上的元素放到low链表和high链表中。该操作的代码可以精简为：
+
+     ```java
+     //low链表的头结点和尾结点
+     Node<K,V> loHead = null, loTail = null;
+     do{
+         //获取链表下一元素
+         next = e.next;
+         //根据定义的条件把该元素放入low链表中
+         if ((e.hash & oldCap) == 0) {
+             //low链表放入第一个元素时，让head结点指向该元素
+             if (loTail == null)
+                  loHead = e;
+            	else
+                 //除了链表放入第一个元素的情况，置尾结点的next元素为e，即将e添加到链表最末端
+                 loTail.next = e;
+                 //tail结点指向新增加元素
+            	loTail = e;
+         }
+     }while((e = next) != null);
+     //low链表非空的情况下，将head元素放在数组对应的位置上
+     if (loTail != null) {
+         //置队尾元素的next指针为空
+         loTail.next = null;
+         newTab[j] = loHead;
+     }
+     ```
 
 - `put(K key, V value)`方法
    `HashMap`中添加键值对的方式，其具体实现方式使用`putVal()`函数
