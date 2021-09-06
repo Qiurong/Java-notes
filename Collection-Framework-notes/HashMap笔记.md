@@ -710,5 +710,11 @@ final Node<K,V> getNode(int hash, Object key) {
     两者本质上都是键值对数组，有一些细微的差别。
 
     - 父类不一样。Hashtable符类dictionary类，HashMap父类是abstractMap。dictionary类已经被弃用
+    
     - 线程安全性不一样。Hashtable线程安全，HashMap线程不安全，要安全的话可以用ConcurrentHashMap。
-    - 对null值处理不一样。Hashtable不允许key和value为null，HashMap允许key和value为null，但多条记录的key为null的话，只存在一条记录。
+    
+    - 对null值处理不一样。Hashtable不允许key和value为null，HashMap允许key和value为null，只允许一条`key==null`的键值对。
+    
+      **在put时**，在对key进行hash计算时，如果key==null，那么`hash = 0`，对应也就放到底层数组的第0位。
+    
+      **在get时**，直接hash(key)取到对应的结点。
