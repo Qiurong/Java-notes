@@ -8,6 +8,7 @@
 - [红黑树详解](./Collection-Framework-notes/红黑树笔记.md)
 - [HashMap常用操作笔记](./Collection-Framework-notes/HashMap-operation.md)
 - [PriorityQueue源码阅读笔记](./Collection-Framework-notes/Heap与PriorityQueue.md)
+- [ConcurrentHashMap阅读笔记](./Collection-Framework-notes/ConcurrentHashMap阅读笔记.md)
 
 ## 2. 计算机基础
 

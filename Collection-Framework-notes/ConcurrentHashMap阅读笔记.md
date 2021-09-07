@@ -75,9 +75,9 @@ void transfer(Entry[] newTable, boolean rehash) {
 
   > newTable是线程私有，所以此时newTable[i]为null
 
-  代码4：`newTable[i] = e;`，即 newTable[i] = a
+  代码3：`newTable[i] = e;`，即 newTable[i] = a
 
-  代码5：`e = next;` 即 e = b
+  代码4：`e = next;` 即 e = b
 
   <img src = "./img/线程1循环一.png">
 
@@ -89,9 +89,9 @@ void transfer(Entry[] newTable, boolean rehash) {
 
   代码2：`e.next = newTable[i]`，即b.next = a
 
-  代码4：`newTable[i] = e;`，即 newTable[i] = b
+  代码3：`newTable[i] = e;`，即 newTable[i] = b
 
-  代码5：`e = next;` 即 e = a
+  代码4：`e = next;` 即 e = a
 
   <img src = "./img/线程1循环二.png">
 
@@ -99,11 +99,11 @@ void transfer(Entry[] newTable, boolean rehash) {
 
   代码1：`Entry<K,V> next = e.next;` 即 next = null
 
-  代码2：`e.next = newTable[i]`，即**a.next = b**，环化问题
+  代码2：`e.next = newTable[i]`，即**a.next = b，环化问题！！**
 
-  代码4：`newTable[i] = e;`，即 newTable[i] = a
+  代码3：`newTable[i] = e;`，即 newTable[i] = a
 
-  代码5：`e = next;` 即 e = null
+  代码4：`e = next;` 即 e = null
 
   <img src = "./img/环化.png">
 
