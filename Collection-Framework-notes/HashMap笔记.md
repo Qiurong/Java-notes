@@ -671,6 +671,21 @@ final Node<K,V> getNode(int hash, Object key) {
        }
        return false;
    }
+   
+   //同时需要注意重写equals()就要重写hashcode()
+   //做法： 基数为31,  累加:  s[i] * 31的(n-i-1)次方。 前面的累乘次数多
+   //两点原因：1.让字符串前面的字符所占比重大；2. *31可以转换为 右移5为 - 本身。（又一例用位操作提升性能的例子）
+   public int hashCode() {
+       int h = hash;
+       if (h == 0 && value.length > 0) {
+           char val[] = value;
+           for (int i = 0; i < value.length; i++) {
+               h = 31 * h + val[i];
+           }
+               hash = h;
+       }
+       return h;
+   }
    ```
 
 6. hashmap的数组长度为什么一定为2的次幂，如何保证这一特性？
