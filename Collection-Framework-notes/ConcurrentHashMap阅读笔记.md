@@ -86,6 +86,8 @@ void transfer(Entry[] newTable, boolean rehash) {
   代码1：`Entry<K,V> next = e.next;` 即 next = a
 
   > 线程2已经修改b.next = a，node是类变量，线程共享
+  >
+  > 实际上此时期盼的是：next =  null ！！
 
   代码2：`e.next = newTable[i]`，即b.next = a
 
@@ -107,9 +109,9 @@ void transfer(Entry[] newTable, boolean rehash) {
 
   <img src = "./img/环化.png">
 
-一句话总结：头插法导致插入顺序和原顺序相反，多线程下造成了指向混乱，最终出现了链表环化问题。
+一句话总结：头插法逆序了链表的原有顺序。在遍历原链表获取当前Node的next时，由于第一个线程把原有顺序反过来了，导致next实际上获取的是上一个元素，也就造成了环化问题。
 
-> 线程1在遍历完oldTable中的b之后应该next为null，但由于线程2改变了b.next = a，所以第三轮newTable为e = a, a.next = b即把已经存在于newTable中的a结点头插入链表，导致环化。
+> 线程1在遍历完oldTable中的b时next应该为null，但由于线程2改变了b.next = a！！(把链表顺序反过来了)，所以第三轮newTable为e = a, a.next = b！！！(实际上应该为null)即把已经存在于newTable中的a结点头插入链表，导致环化。
 
 ### JDK 1.8
 
